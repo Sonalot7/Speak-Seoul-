@@ -1,213 +1,127 @@
-import React, { useState, useMemo } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Calculator</title>
 
-// Single-file React component prototype for GenerateMia Analytics + Simple Planner
-// TailwindCSS utility classes are used for styling. This is a protototype — replace mock data
-// with real API data and wire up AI endpoints for Mia Chat.
+<!-- Pixel Font -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
-const sampleSubjects = [
-  { name: 'Math', weeklyTarget: 6, difficulty: 0.8 },
-  { name: 'Physics', weeklyTarget: 4, difficulty: 0.9 },
-  { name: 'Korean', weeklyTarget: 5, difficulty: 0.5 },
-];
+<style>
+    body {
+        background: #87CEEB;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Press Start 2P", cursive;
+    }
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7f50', '#a4de6c'];
+    .calculator {
+        background: #FCEEDD;
+        padding: 20px;
+        border: 4px solid #333;
+        image-rendering: pixelated;
+        box-shadow: 0 0 0 6px #333, 0 0 0 10px #888;
+    }
 
-export default function GenerateMiaDashboard() {
-  const [weeklyHours, setWeeklyHours] = useState(15);
-  const [subjects, setSubjects] = useState(sampleSubjects);
-  const [studyLog, setStudyLog] = useState(generateMockStudyLog());
-  const [plan, setPlan] = useState(generatePlan(weeklyHours, subjects));
+    .screen {
+        width: 250px;
+        height: 60px;
+        background: #D8F9C1;
+        border: 4px solid #333;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 10px;
+        font-size: 20px;
+        overflow: hidden;
+    }
 
-  // Recompute plan when inputs change
-  const regenerate = () => setPlan(generatePlan(weeklyHours, subjects));
+    .buttons {
+        display: grid;
+        grid-template-columns: repeat(4, 60px);
+        gap: 10px;
+    }
 
-  const hoursBySubject = useMemo(() => {
-    const map = {};
-    subjects.forEach((s) => (map[s.name] = 0));
-    studyLog.forEach((entry) => {
-      map[entry.subject] = (map[entry.subject] || 0) + entry.hours;
-    });
-    return Object.entries(map).map(([name, hours]) => ({ name, hours }));
-  }, [studyLog, subjects]);
+    button {
+        background: #FFE5E5;
+        border: 4px solid #333;
+        padding: 15px;
+        font-size: 14px;
+        cursor: pointer;
+        image-rendering: pixelated;
+        box-shadow: 0 0 0 4px #333;
+    }
 
-  const weeklyHoursSeries = useMemo(() => {
-    // produce last 7 days series
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days.map((d, i) => ({ day: d, hours: Math.round(Math.random() * 3 * (i % 3 + 1) * 10) / 10 }));
-  }, [studyLog]);
+    button:active {
+        transform: translateY(2px);
+        background: #FFC8C8;
+    }
 
-  return (
-    <div className="p-6 min-h-screen bg-slate-50">
-      <header className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">GenerateMia — Analytics & Planner Prototype</h1>
-        <div className="space-x-2">
-          <button
-            onClick={regenerate}
-            className="px-4 py-2 bg-indigo-600 text-white rounded shadow-sm hover:bg-indigo-500"
-          >
-            Regenerate Plan
-          </button>
-          <button className="px-4 py-2 bg-green-600 text-white rounded shadow-sm hover:bg-green-500">Start Focus Mode</button>
-        </div>
-      </header>
+    .equal {
+        background: #FFD966;
+    }
 
-      <main className="grid grid-cols-12 gap-6">
-        {/* Left column: Planner */}
-        <section className="col-span-5 bg-white p-4 rounded-lg shadow">
-          <h2 className="font-medium mb-3">Quick Planner</h2>
-          <div className="mb-4">
-            <label className="text-sm block mb-1">Weekly hours available</label>
-            <input
-              type="range"
-              min={5}
-              max={40}
-              value={weeklyHours}
-              onChange={(e) => setWeeklyHours(Number(e.target.value))}
-              className="w-full"
-            />
-            <div className="text-xs text-slate-500 mt-1">{weeklyHours} hours / week</div>
-          </div>
+    .equal:active {
+        background: #FFCF4D;
+    }
+</style>
+</head>
+<body>
 
-          <div className="space-y-3">
-            {subjects.map((s, idx) => (
-              <div key={s.name} className="flex items-center justify-between">
-                <div>
-                  <div className="font-semibold">{s.name}</div>
-                  <div className="text-xs text-slate-500">Difficulty: {s.difficulty}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm">Target: {s.weeklyTarget}h</div>
-                </div>
-              </div>
-            ))}
-          </div>
+<div class="calculator">
+    <div class="screen" id="display">0</div>
 
-          <div className="mt-4">
-            <h3 className="font-medium mb-2">Generated weekly plan</h3>
-            <ul className="space-y-2 text-sm">
-              {plan.map((p) => (
-                <li key={p.subject} className="flex justify-between">
-                  <span>{p.subject}</span>
-                  <span className="font-semibold">{p.hours} h</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+    <div class="buttons">
+        <button onclick="appendValue('7')">7</button>
+        <button onclick="appendValue('8')">8</button>
+        <button onclick="appendValue('9')">9</button>
+        <button onclick="appendValue('/')">÷</button>
 
-        {/* Right column: Analytics */}
-        <section className="col-span-7 space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="bg-white p-4 rounded-lg shadow">
-              <h3 className="font-medium mb-2">Study Hours (last 7 days)</h3>
-              <div style={{ width: '100%', height: 180 }}>
-                <ResponsiveContainer>
-                  <LineChart data={weeklyHoursSeries}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line type="monotone" dataKey="hours" stroke="#8884d8" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
+        <button onclick="appendValue('4')">4</button>
+        <button onclick="appendValue('5')">5</button>
+        <button onclick="appendValue('6')">6</button>
+        <button onclick="appendValue('*')">×</button>
 
-            <div className="bg-white p-4 rounded-lg shadow">
-              <h3 className="font-medium mb-2">Time allocation by subject</h3>
-              <div style={{ width: '100%', height: 180 }}>
-                <ResponsiveContainer>
-                  <PieChart>
-                    <Pie data={hoursBySubject} dataKey="hours" nameKey="name" outerRadius={60} label>
-                      {hoursBySubject.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </div>
+        <button onclick="appendValue('1')">1</button>
+        <button onclick="appendValue('2')">2</button>
+        <button onclick="appendValue('3')">3</button>
+        <button onclick="appendValue('-')">-</button>
 
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="font-medium mb-2">Accuracy by subject</h3>
-            <div style={{ width: '100%', height: 240 }}>
-              <ResponsiveContainer>
-                <BarChart data={mockAccuracy(subjects)}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="subject" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="accuracy" barSize={36} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="mt-3 text-sm text-slate-600">Insight: You're spending most time on <strong>{hoursBySubject[0]?.name}</strong> but accuracy may be lower than expected — try short targeted quizzes.</div>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg shadow">
-            <h3 className="font-medium mb-2">Recent Sessions</h3>
-            <div className="grid grid-cols-3 gap-3 text-sm">
-              {studyLog.slice(0, 6).map((s, i) => (
-                <div key={i} className="p-2 border rounded">
-                  <div className="font-medium">{s.subject}</div>
-                  <div className="text-xs text-slate-500">{s.type} • {s.hours}h</div>
-                  <div className="text-xs mt-1">{s.note}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="mt-6 text-xs text-slate-500">Prototype • Replace mock logic with real APIs and AI endpoints for Mia Chat.</footer>
+        <button onclick="appendValue('0')">0</button>
+        <button onclick="clearDisplay()">C</button>
+        <button onclick="appendValue('+')">+</button>
+        <button class="equal" onclick="calculate()">=</button>
     </div>
-  );
-}
+</div>
 
-// --- Helpers & mock data ---
-function generateMockStudyLog() {
-  const items = [];
-  const types = ['Focus', 'Revision', 'Practice'];
-  for (let i = 0; i < 12; i++) {
-    items.push({
-      subject: sampleSubjects[i % sampleSubjects.length].name,
-      hours: Math.round((Math.random() * 2 + 0.25) * 100) / 100,
-      type: types[i % types.length],
-      note: 'Quick session: problems & flashcards',
-      date: new Date(Date.now() - i * 86400000).toISOString(),
-    });
-  }
-  return items;
-}
+<script>
+    const display = document.getElementById("display");
 
-function generatePlan(weeklyHours, subjects) {
-  // Very simple proportional allocation that respects weeklyTarget if provided
-  const totalTargets = subjects.reduce((s, x) => s + (x.weeklyTarget || 1), 0);
-  return subjects.map((s) => {
-    const prop = (s.weeklyTarget || 1) / totalTargets;
-    const hours = Math.round(prop * weeklyHours * 10) / 10;
-    return { subject: s.name, hours };
-  });
-}
+    function appendValue(val) {
+        if (display.innerText === "0") {
+            display.innerText = val;
+        } else {
+            display.innerText += val;
+        }
+    }
 
-function mockAccuracy(subjects) {
-  return subjects.map((s, i) => ({ subject: s.name, accuracy: Math.round((0.5 + Math.random() * 0.45) * 100) }));
-}
+    function clearDisplay() {
+        display.innerText = "0";
+    }
+
+    function calculate() {
+        try {
+            display.innerText = eval(display.innerText);
+        } catch {
+            display.innerText = "ERR";
+        }
+    }
+</script>
+
+</body>
+</html>
+
