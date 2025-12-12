@@ -129,9 +129,10 @@
 </div>
 
 <!-- SOUND EFFECT -->
-<audio id="clickSound">
-    <source src="https://github.com/Sonalot7/Speak-Seoul-/blob/caf297313dc79cdf7cb37fadc3c336abfa8ecd71/clicksound.mp3" type="audio/mpeg">
+<audio id="clickSound" preload="auto">
+  <source src="https://github.com/Sonalot7/Speak-Seoul-/raw/refs/heads/main/clicksound.mp3" type="audio/mpeg">
 </audio>
+
 
 <script>
     const display = document.getElementById("display");
@@ -161,6 +162,17 @@
             display.innerText = "ERR";
         }
     }
+
+    function playClick() {
+  const sound = document.getElementById("clickSound");
+  if (!sound) return; // safe
+
+  sound.currentTime = 0;
+  sound.play().catch(e => {
+    console.warn("Audio failed but calculator still works");
+  });
+}
+
 </script>
 
 </body>
